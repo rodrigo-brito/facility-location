@@ -26,7 +26,7 @@ func run(inputFile string, asyncLimit int, verbose bool) {
 
 func main() {
 	var (
-		cpu     int
+		async   int
 		verbose bool
 	)
 
@@ -35,11 +35,11 @@ func main() {
 		Short: "Read input file and create a network design",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			run(args[0], cpu, verbose)
+			run(args[0], async, verbose)
 		},
 	}
 
-	rootCmd.Flags().IntVarP(&cpu, "cpu", "c", 1, "number of CPUs to use")
+	rootCmd.Flags().IntVarP(&async, "async", "a", 4, "number of async tasks")
 	rootCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "active verbose mode")
 
 	if err := rootCmd.Execute(); err != nil {

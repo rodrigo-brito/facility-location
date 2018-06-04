@@ -3,6 +3,7 @@ package solution
 import (
 	"fmt"
 
+	"github.com/rodrigo-brito/hub-spoke-go/model/network"
 	"github.com/rodrigo-brito/hub-spoke-go/util/log"
 )
 
@@ -38,7 +39,7 @@ func (s *Solution) RemoveHub(hub int) {
 
 // Print the solution in stdout
 func (s *Solution) Print() {
-	log.Infof("COST = %18.4f", s.Cost)
+	log.Infof("COST = %.4f", s.Cost)
 	log.Infof("HUBS = %v", s.Hubs)
 	log.Infof("HUBS BIN = %v", s.HubsBin)
 	log.Info("ALLOCATION")
@@ -58,4 +59,38 @@ func New(size int) *Solution {
 		HubsBin:    make(map[int]bool, size),
 		Allocation: make([][]bool, size, size),
 	}
+}
+
+func (s *Solution) Value(data *network.Data) float64 {
+	var FO float64
+
+	// Installation cost
+	for _, hub := range s.Hubs {
+		FO += data.InstallationCost[hub]
+	}
+
+	// Transport cost between node and hub
+	for _, k := range s.Hubs {
+		for i := 0; i < data.Size; i++ {
+			if s.Allocation[i][k] && i != k {
+				FO += (data.FlowDestiny[i] + data.FlowOrigin[i]) * data.Distance[i][k]
+			}
+		}
+	}
+
+	// Transport cost between hubs
+	for i := 0; i < data.Size; i++ {
+		for j := i; j < data.Size; j++ {
+			for _, k := range s.Hubs {
+				for _, m := range s.Hubs {
+					if k != m && s.Allocation[i][k] && s.Allocation[j][m] {
+						FO += data.Flow[i][j]*data.Distance[k][m]*data.ScaleFactor +
+							data.Flow[j][i]*data.Distance[m][k]*data.ScaleFactor
+					}
+				}
+			}
+		}
+	}
+
+	return FO
 }

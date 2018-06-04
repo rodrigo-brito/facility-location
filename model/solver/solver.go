@@ -11,7 +11,7 @@ const defaultAsynTasks = 1
 
 type Solver struct {
 	MaxAsyncTasks int
-	Data          *network.NetworkData
+	Data          *network.Data
 
 	BestSolution *solution.Solution
 	BestCost     float64
@@ -49,7 +49,7 @@ func New(options ...OptFunc) *Solver {
 
 type OptFunc func(*Solver)
 
-func WithNetworkData(data *network.NetworkData) OptFunc {
+func WithNetworkData(data *network.Data) OptFunc {
 	return func(solver *Solver) {
 		solver.Data = data
 	}

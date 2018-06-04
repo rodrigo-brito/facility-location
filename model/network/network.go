@@ -11,16 +11,18 @@ import (
 )
 
 // InputData store all network data
-type NetworkData struct {
+type Data struct {
 	Size             int
 	ScaleFactor      float64
 	InstallationCost []float64
 	Distance         [][]float64
 	Flow             [][]float64
+	FlowOrigin       []float64
+	FlowDestiny      []float64
 }
 
 // parseLine validate a line of values and parse to a float array
-func parseLine(line string) (bool, []float64, error) {
+func parseLine(line string, divisionFactor float64) (bool, []float64, error) {
 	values := strings.Split(strings.TrimSpace(line), " ")
 	numbers := make([]float64, 0)
 
@@ -35,7 +37,7 @@ func parseLine(line string) (bool, []float64, error) {
 			return false, nil, err
 		}
 
-		numbers = append(numbers, number)
+		numbers = append(numbers, number/divisionFactor)
 	}
 
 	if len(numbers) > 0 {
@@ -45,25 +47,25 @@ func parseLine(line string) (bool, []float64, error) {
 }
 
 // nextLine validate and return the next valid line
-func nextLine(scanner *bufio.Scanner) (bool, []float64, error) {
+func nextLine(scanner *bufio.Scanner, divisionFactor float64) (bool, []float64, error) {
 	if ok := scanner.Scan(); !ok {
 		return false, nil, fmt.Errorf("unexpected end of file")
 	}
 
 	line := scanner.Text()
-	if ok, values, err := parseLine(line); ok {
+	if ok, values, err := parseLine(line, divisionFactor); ok {
 		return true, values, nil
 	} else if err != nil {
 		return false, nil, err
 	}
 
 	// return the next valid line
-	return nextLine(scanner)
+	return nextLine(scanner, divisionFactor)
 }
 
 // FromFile read a input file and generate the network data
-func FromFile(fileName string) (*NetworkData, error) {
-	data := new(NetworkData)
+func FromFile(fileName string) (*Data, error) {
+	data := new(Data)
 
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -76,14 +78,14 @@ func FromFile(fileName string) (*NetworkData, error) {
 	sc.Split(bufio.ScanLines)
 
 	// First line: network size
-	if ok, line, err := nextLine(sc); ok {
+	if ok, line, err := nextLine(sc, 1); ok {
 		data.Size = int(line[0])
 	} else if err != nil {
 		return nil, err
 	}
 
 	// Second line: scale factor
-	if ok, line, err := nextLine(sc); ok {
+	if ok, line, err := nextLine(sc, 1); ok {
 		data.ScaleFactor = line[0]
 	} else if err != nil {
 		return nil, err
@@ -92,21 +94,8 @@ func FromFile(fileName string) (*NetworkData, error) {
 	// Hub installation cost
 	data.InstallationCost = make([]float64, data.Size)
 	for i := 0; i < data.Size; i++ {
-		if ok, line, err := nextLine(sc); ok {
+		if ok, line, err := nextLine(sc, 10000); ok {
 			data.InstallationCost[i] = line[0]
-		} else if err != nil {
-			return nil, err
-		}
-	}
-
-	// Distance between nodes
-	data.Distance = make([][]float64, data.Size, data.Size)
-	for i := 0; i < data.Size; i++ {
-		if ok, line, err := nextLine(sc); ok {
-			if len(line) != data.Size {
-				return nil, fmt.Errorf("distance matrix should have size %d", data.Size)
-			}
-			data.Distance[i] = line
 		} else if err != nil {
 			return nil, err
 		}
@@ -115,11 +104,33 @@ func FromFile(fileName string) (*NetworkData, error) {
 	// Flow between nodes
 	data.Flow = make([][]float64, data.Size, data.Size)
 	for i := 0; i < data.Size; i++ {
-		if ok, line, err := nextLine(sc); ok {
+		if ok, line, err := nextLine(sc, 100); ok {
 			if len(line) != data.Size {
 				return nil, fmt.Errorf("flow matrix should have dimension %dx%d", data.Size, data.Size)
 			}
 			data.Flow[i] = line
+		} else if err != nil {
+			return nil, err
+		}
+	}
+
+	data.FlowDestiny = make([]float64, data.Size)
+	data.FlowOrigin = make([]float64, data.Size)
+	for i := 0; i < data.Size; i++ {
+		for j := 0; j < data.Size; j++ {
+			data.FlowOrigin[i] += data.Flow[i][j]
+			data.FlowDestiny[i] += data.Flow[j][i]
+		}
+	}
+
+	// Distance between nodes
+	data.Distance = make([][]float64, data.Size, data.Size)
+	for i := 0; i < data.Size; i++ {
+		if ok, line, err := nextLine(sc, 100); ok {
+			if len(line) != data.Size {
+				return nil, fmt.Errorf("distance matrix should have size %d", data.Size)
+			}
+			data.Distance[i] = line
 		} else if err != nil {
 			return nil, err
 		}
