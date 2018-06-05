@@ -3,11 +3,12 @@ package solver
 import (
 	"time"
 
+	"github.com/rodrigo-brito/hub-spoke-go/model/heuristic"
 	"github.com/rodrigo-brito/hub-spoke-go/model/network"
 	"github.com/rodrigo-brito/hub-spoke-go/model/solution"
 )
 
-const defaultAsynTasks = 1
+const defaultAsyncTasks = 1
 
 type Solver struct {
 	MaxAsyncTasks int
@@ -21,7 +22,7 @@ type Solver struct {
 }
 
 func (s *Solver) initializeSolution() {
-	solution := solution.New(s.Data.Size)
+	solution := heuristic.NewSolution(s.Data)
 	s.BestSolution = solution
 }
 
@@ -38,7 +39,7 @@ func (s *Solver) Solve() error {
 func New(options ...OptFunc) *Solver {
 	solver := new(Solver)
 
-	solver.MaxAsyncTasks = defaultAsynTasks
+	solver.MaxAsyncTasks = defaultAsyncTasks
 
 	for _, opt := range options {
 		opt(solver)
