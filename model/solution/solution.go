@@ -29,6 +29,17 @@ func (s *Solution) AddHub(hub int) {
 	s.AllocationNode[hub] = hub
 	s.cost = nil
 	s.generateHubList()
+
+	if len(s.Hubs) == 1 {
+		s.initializeAllocation()
+	}
+}
+
+// Allocate all nodes to initial hub
+func (s *Solution) initializeAllocation() {
+	for i := range s.AllocationNode {
+		s.AllocNode(i, s.Hubs[0])
+	}
 }
 
 // RemoveHub removes hub from solution
@@ -75,6 +86,16 @@ func New(size int) *Solution {
 	}
 
 	return s
+}
+
+func (s *Solution) NormalizeAllocation(data *network.Data) {
+	for i := 0; i < data.Size; i++ {
+		for _, hub := range s.Hubs {
+			if data.Distance[i][hub] < data.Distance[i][s.AllocationNode[i]] {
+				s.AllocNode(i, hub)
+			}
+		}
+	}
 }
 
 func (s *Solution) GetCost(data *network.Data) float64 {
