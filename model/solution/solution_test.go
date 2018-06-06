@@ -41,7 +41,7 @@ func TestSolution_GetCostCalculation(t *testing.T) {
 func TestSolution_GetCostReturn(t *testing.T) {
 	expectedValue := &[]float64{1}[0]
 	s := &Solution{
-		cost: expectedValue,
+		Cost: expectedValue,
 	}
 	s.Hubs = []int{0, 3, 4}
 
@@ -49,14 +49,21 @@ func TestSolution_GetCostReturn(t *testing.T) {
 }
 
 func TestSolution_AddHub(t *testing.T) {
-	s := New(5)
+	s := New(data.Size)
 	s.AddHub(1)
+	s.AllocateNearestHub(data)
 	assert.Equal(t, s.Allocation[1][1], true)
 	assert.Equal(t, s.AllocationNode[1], 1)
 	assert.Len(t, s.Hubs, 1)
 	assert.Contains(t, s.Hubs, 1)
 
+	for i := range s.Allocation {
+		assert.True(t, s.Allocation[i][1])
+	}
+
 	s.AddHub(2)
+	s.AllocateNearestHub(data)
+	assert.Equal(t, s.Allocation[2][1], false)
 	assert.Equal(t, s.Allocation[2][2], true)
 	assert.Equal(t, s.AllocationNode[2], 2)
 	assert.Len(t, s.Hubs, 2)
@@ -65,7 +72,7 @@ func TestSolution_AddHub(t *testing.T) {
 }
 
 func TestSolution_RemoveHub(t *testing.T) {
-	s := New(5)
+	s := New(data.Size)
 
 	s.AddHub(1)
 	s.AddHub(3)
@@ -83,7 +90,7 @@ func TestSolution_RemoveHub(t *testing.T) {
 }
 
 func TestSolution_AllocNode(t *testing.T) {
-	s := New(5)
+	s := New(data.Size)
 	s.AddHub(1)
 	s.AddHub(2)
 

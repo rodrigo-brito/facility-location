@@ -1,6 +1,7 @@
 package solver
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/rodrigo-brito/hub-spoke-go/model/heuristic"
@@ -21,18 +22,32 @@ type Solver struct {
 	EndTime   time.Time
 }
 
+func (s *Solver) Print() error {
+	fmt.Println("-------------- ")
+	fmt.Printf("Time: %.4f\n", s.EndTime.Sub(s.StartTime).Seconds())
+	fmt.Printf("FO: %.4f\n", s.BestSolution.GetCost(s.Data))
+	fmt.Printf("Hubs: %v\n", s.BestSolution.Hubs)
+	fmt.Println("-------------- ")
+	return nil
+}
+
 func (s *Solver) initializeSolution() {
-	solution := heuristic.NewSolution(s.Data)
-	s.BestSolution = solution
+	s.BestSolution = heuristic.NewSolution(s.Data)
 }
 
 func (s *Solver) Solve() error {
+	// Start timer
 	s.StartTime = time.Now()
 
+	// Initialize Solution - GRASP
 	s.initializeSolution()
-	s.BestSolution.Print()
 
+	//Finalize timer
 	s.EndTime = time.Now()
+
+	// Display the best result and time
+	s.Print()
+
 	return nil
 }
 
