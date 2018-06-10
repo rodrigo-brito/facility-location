@@ -12,7 +12,10 @@ import (
 const variabilityFactor = 0.05
 
 func NewSolution(data *network.Data) *solution.Solution {
-	var bestSolution = solution.New(data.Size, solution.WithInfinityCost())
+	//var bestSolution = solution.New(data.Size, solution.WithInfinityCost())
+	var bestSolution = solution.New(data.Size)
+	bestSolution.AddHub(0)
+	bestSolution.AllocateNearestHub(data)
 
 	// Include initial node (minor cost)
 	for initialNode := 0; initialNode < data.Size; initialNode++ {
@@ -20,10 +23,9 @@ func NewSolution(data *network.Data) *solution.Solution {
 		initialSolution := solution.New(data.Size)
 		initialSolution.AddHub(initialNode)
 		initialSolution.AllocateNearestHub(data)
-		initialSolution.Verify() //TODO: remover
 
 		if initialSolution.GetCost(data) < bestSolution.GetCost(data) {
-			log.Infof("New solution found hubs=%v FO=%.4f", initialSolution.Hubs, initialSolution.GetCost(data))
+			log.Infof("New solution found FO=%.4f hubs=%v", initialSolution.GetCost(data), initialSolution.Hubs)
 			initialSolution.CopyTo(bestSolution)
 		}
 
@@ -34,8 +36,6 @@ func NewSolution(data *network.Data) *solution.Solution {
 			solutions := make([]*solution.Solution, 0)
 
 			initialSolution.Verify()
-
-			log.Infof("GRASP node %d %#v", initialNode, nodesBlocked)
 
 			for node := 0; node < data.Size; node++ {
 				// If node is blocked ou already is hub, skip
@@ -81,13 +81,12 @@ func NewSolution(data *network.Data) *solution.Solution {
 
 			if len(indexesPool) > 0 {
 				index := indexesPool[util.Random(0, len(indexesPool)-1)]
-				log.Info("sorted solution = ", solutions[index].Hubs)
 				solutions[index].CopyTo(initialSolution)
 			}
 		}
 
 		if initialSolution.GetCost(data) < bestSolution.GetCost(data) {
-			log.Infof("New solution found hubs=%v FO=%.4f", initialSolution.Hubs, initialSolution.GetCost(data))
+			log.Infof("New solution found FO=%.4f hubs=%v", initialSolution.GetCost(data), initialSolution.Hubs)
 			initialSolution.CopyTo(bestSolution)
 		}
 	}

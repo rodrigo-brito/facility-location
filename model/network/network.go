@@ -91,11 +91,18 @@ func FromFile(fileName string) (*Data, error) {
 		return nil, err
 	}
 
+	ex := float64(1)
+	if data.Size >= 170 {
+		ex = 5
+	} else if data.Size >= 70 {
+		ex = 2
+	}
+
 	// Hub installation cost
 	data.InstallationCost = make([]float64, data.Size)
 	for i := 0; i < data.Size; i++ {
 		if ok, line, err := nextLine(sc, 10000); ok {
-			data.InstallationCost[i] = line[0]
+			data.InstallationCost[i] = ex * line[0]
 		} else if err != nil {
 			return nil, err
 		}
@@ -137,4 +144,31 @@ func FromFile(fileName string) (*Data, error) {
 	}
 
 	return data, nil
+}
+
+func (data *Data) Print() {
+	fmt.Println("Instalation\n-----")
+	for _, c := range data.InstallationCost {
+		fmt.Printf("%.4f\n", c)
+	}
+
+	fmt.Println("\nFlow\n-----")
+	for _, line := range data.Flow {
+		fmt.Println(line)
+	}
+
+	fmt.Println("\nDistance\n-----")
+	for _, line := range data.Distance {
+		fmt.Println(line)
+	}
+
+	fmt.Println("\nOrigin Flow\n-----")
+	for _, c := range data.FlowOrigin {
+		fmt.Printf("%.4f\n", c)
+	}
+
+	fmt.Println("\nDestiny Flow\n-----")
+	for _, c := range data.FlowDestiny {
+		fmt.Printf("%.4f\n", c)
+	}
 }

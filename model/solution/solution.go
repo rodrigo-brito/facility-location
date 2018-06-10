@@ -43,6 +43,7 @@ func (s *Solution) AddHub(hub int) {
 		s.initializeAllocation()
 	}
 
+	s.Verify() //TODO: remover
 }
 
 // Allocate all nodes to initial hub
@@ -51,24 +52,64 @@ func (s *Solution) initializeAllocation() {
 		s.Allocation[i][s.Hubs[0]] = true
 		s.AllocationNode[i] = s.Hubs[0]
 	}
+
+	s.Verify() //TODO: remover
 }
 
 // RemoveHub removes hub from solution
 func (s *Solution) RemoveHub(hub int) {
 	if len(s.Hubs) < 2 {
+		log.Infof("removing %d hubs = %v ", hub, s.Hubs)
 		panic("hub remove not permitted") //TODO: remove check
 	}
 
 	s.Allocation[hub][hub] = false
 	s.generateHubList()
 	s.Allocation[hub][s.Hubs[0]] = true
+	s.AllocationNode[hub] = s.Hubs[0]
+
+	// Move all allocations
+	for i := 0; i < s.Size; i++ {
+		if s.Allocation[i][hub] {
+			//log.Infof("moving %d -> %d | %d -> %d", i, s.AllocationNode[i], i, s.Hubs[0])
+			s.AllocNode(i, s.Hubs[0])
+		}
+	}
+
 	s.Cost = nil
+	s.Verify() //TODO: remover
+}
+
+// Swap functions between hub and node
+func (s *Solution) SwapFunction(node, hub int) {
+	if !s.Allocation[hub][hub] || !s.Allocation[node][hub] {
+		log.Info("hubs ", s.Hubs, node, hub)
+		panic("swap not permitted") //TODO: remove check
+	}
+
+	s.Allocation[hub][hub] = false
+	s.Allocation[hub][node] = true
+	s.Allocation[node][node] = true
+	s.Allocation[node][hub] = false
+	s.AllocationNode[hub] = node
+	s.AllocationNode[node] = node
+	s.generateHubList()
+
+	for i := 0; i < s.Size; i++ {
+		if s.Allocation[i][hub] {
+			s.AllocNode(i, node)
+		}
+	}
+
+	s.Cost = nil
+	s.Verify() //TODO: remover
 }
 
 //  Alloc a node to a hub and remove last allocation
 func (s *Solution) AllocNode(node, hub int) {
 	if !s.Allocation[hub][hub] || s.Allocation[node][node] {
-		panic("allocation not permitted")
+		log.Error(hub, s.Allocation[hub][hub], s.Allocation[node][node])
+		panic("allocation not permitted") //TODO: remove
 	}
 
 	s.Allocation[node][s.AllocationNode[node]] = false
@@ -87,7 +128,11 @@ func (s *Solution) Print() {
 	fmt.Println("----------")
 	for _, line := range s.Allocation {
 		for _, column := range line {
-			fmt.Printf("%v\t", column)
+			if column {
+				fmt.Printf("1 ")
+			} else {
+				fmt.Printf("0 ")
+			}
 		}
 		fmt.Println()
 	}
@@ -134,6 +179,7 @@ func (s *Solution) AllocateNearestHub(data *network.Data) {
 			}
 		}
 	}
+	s.Verify() //TODO: remover
 }
 
 func (s *Solution) GetCost(data *network.Data) float64 {
@@ -152,7 +198,7 @@ func (s *Solution) GetCost(data *network.Data) float64 {
 	// Transport Cost between node and hub
 	for _, k := range s.Hubs {
 		for i := 0; i < data.Size; i++ {
-			if s.Allocation[i][k] && i != k {
+			if s.Allocation[i][k] {
 				*s.Cost += (data.FlowDestiny[i] + data.FlowOrigin[i]) * data.Distance[i][k]
 			}
 		}
@@ -163,7 +209,7 @@ func (s *Solution) GetCost(data *network.Data) float64 {
 		for j := i; j < data.Size; j++ {
 			for _, k := range s.Hubs {
 				for _, m := range s.Hubs {
-					if k != m && s.Allocation[i][k] && s.Allocation[j][m] {
+					if s.Allocation[i][k] && s.Allocation[j][m] {
 						*s.Cost += data.Flow[i][j]*data.Distance[k][m]*data.ScaleFactor +
 							data.Flow[j][i]*data.Distance[m][k]*data.ScaleFactor
 					}
@@ -176,9 +222,21 @@ func (s *Solution) GetCost(data *network.Data) float64 {
 }
 
 func (s *Solution) CopyTo(copy *Solution) {
-	s.Hubs = make([]int, 0)
-	copy.Cost = new(float64)
-	*copy.Cost = *s.Cost
+	// Copy hubs
+	copy.Hubs = make([]int, len(s.Hubs), len(s.Hubs))
+	for i := range s.Hubs {
+		copy.Hubs[i] = s.Hubs[i]
+	}
+
+	// Copy cost
+	if s.Cost != nil {
+		copy.Cost = new(float64)
+		*copy.Cost = *s.Cost
+	} else {
+		copy.Cost = nil
+	}
+
+	// Copy allocation
 	for i := 0; i < s.Size; i++ {
 		copy.AllocationNode[i] = s.AllocationNode[i]
 		for j := 0; j < s.Size; j++ {
@@ -186,6 +244,8 @@ func (s *Solution) CopyTo(copy *Solution) {
 		}
 	}
 	copy.generateHubList()
+	s.Verify()    //TODO: remover
+	copy.Verify() //TODO: remover
 }
 
 func (s *Solution) GetCopy() *Solution {
@@ -200,11 +260,21 @@ func (s *Solution) Verify() { // TODO: remover
 		for j := 0; j < s.Size; j++ {
 			if s.Allocation[i][j] {
 				sum++
+				if !s.Allocation[j][j] {
+					log.Infof("%d -> %d, %d is not hub = %v", i, j, j, s.Hubs)
+					s.Print()
+					panic("invalid solution [aloc hub]")
+				}
+				if s.AllocationNode[i] != j {
+					log.Infof("%d -> %d, %d is not hub = %v", i, j, j, s.Hubs)
+					s.Print()
+					panic("invalid solution [alocNode hub]")
+				}
 			}
 		}
 		if sum != 1 {
 			s.Print()
-			panic("invalid solution [aloc]")
+			panic("invalid solution [number aloc]")
 		}
 		for _, hub := range s.Hubs {
 			if !s.Allocation[hub][hub] {

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/rodrigo-brito/hub-spoke-go/model/heuristic"
+	"github.com/rodrigo-brito/hub-spoke-go/model/heuristic/neighborhoods"
 	"github.com/rodrigo-brito/hub-spoke-go/model/network"
 	"github.com/rodrigo-brito/hub-spoke-go/model/solution"
 )
@@ -41,6 +42,15 @@ func (s *Solver) Solve() error {
 
 	// Initialize Solution - GRASP
 	s.initializeSolution()
+
+	// VNS
+	heuristic.VNS(
+		s.Data, s.BestSolution,
+		neighborhoods.ShiftPerturbation,
+		neighborhoods.RemoveHubPerturbation,
+		neighborhoods.AddHubPerturbation,
+		neighborhoods.SwapFunctionPerturbation,
+	)
 
 	//Finalize timer
 	s.EndTime = time.Now()
