@@ -1,10 +1,10 @@
 package heuristic
 
 import (
-	"github.com/rodrigo-brito/hub-spoke-go/model/heuristic/neighborhoods"
-	"github.com/rodrigo-brito/hub-spoke-go/model/network"
-	"github.com/rodrigo-brito/hub-spoke-go/model/solution"
-	"github.com/rodrigo-brito/hub-spoke-go/util/log"
+	"github.com/rodrigo-brito/facility-location/model/heuristic/neighborhoods"
+	"github.com/rodrigo-brito/facility-location/model/network"
+	"github.com/rodrigo-brito/facility-location/model/solution"
+	"github.com/rodrigo-brito/facility-location/util/log"
 )
 
 func VNS(data *network.Data, solution *solution.Solution, perturbations ...neighborhoods.Perturbation) {

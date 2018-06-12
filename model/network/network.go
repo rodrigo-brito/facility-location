@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/rodrigo-brito/hub-spoke-go/util/log"
+	"github.com/rodrigo-brito/facility-location/util/log"
 )
 
 // InputData store all network data

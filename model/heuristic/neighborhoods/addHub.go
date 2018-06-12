@@ -1,10 +1,10 @@
 package neighborhoods
 
 import (
-	"github.com/rodrigo-brito/hub-spoke-go/model/network"
-	"github.com/rodrigo-brito/hub-spoke-go/model/solution"
-	"github.com/rodrigo-brito/hub-spoke-go/util"
-	"github.com/rodrigo-brito/hub-spoke-go/util/log"
+	"github.com/rodrigo-brito/facility-location/model/network"
+	"github.com/rodrigo-brito/facility-location/model/solution"
+	"github.com/rodrigo-brito/facility-location/util"
+	"github.com/rodrigo-brito/facility-location/util/log"
 )
 
 func AddHubPerturbation(solution *solution.Solution) {
