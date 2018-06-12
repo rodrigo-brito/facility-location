@@ -1,5 +1,7 @@
 # Facility Location Problem
 
+[![Build Status](https://travis-ci.org/rodrigo-brito/facility-location.svg?branch=master)](https://travis-ci.org/rodrigo-brito/facility-location) [![Go Report Card](https://goreportcard.com/badge/github.com/rodrigo-brito/facility-location)](https://goreportcard.com/report/github.com/rodrigo-brito/facility-location)
+
 Facility location problem with single allocation solved in Go (Golang).
 
  ## Heuristics applied
