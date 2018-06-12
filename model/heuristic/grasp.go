@@ -47,8 +47,6 @@ func NewSolution(data *network.Data) *solution.Solution {
 				tempSolution.AddHub(node)
 				tempSolution.AllocateNearestHub(data)
 
-				tempSolution.Verify() // TODO: remover
-
 				// If the solution is worst, block node insertion
 				if tempSolution.GetCost(data) > initialSolution.GetCost(data) {
 					nodesBlocked[node] = true

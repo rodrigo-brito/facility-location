@@ -33,7 +33,7 @@ func SwapFunctionLocalSearch(data *network.Data, solution *solution.Solution) (n
 
 			tempSolution := solution.GetCopy()
 			tempSolution.SwapFunction(node, hub)
-			tempSolution.AllocateNearestHub(data) // TODO: test without it
+			tempSolution.AllocateNearestHub(data)
 
 			if tempSolution.GetCost(data) < solution.GetCost(data) {
 				newSolution = true

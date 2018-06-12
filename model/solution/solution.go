@@ -42,8 +42,6 @@ func (s *Solution) AddHub(hub int) {
 	if len(s.Hubs) == 1 {
 		s.initializeAllocation()
 	}
-
-	s.Verify() //TODO: remover
 }
 
 // Allocate all nodes to initial hub
@@ -52,8 +50,6 @@ func (s *Solution) initializeAllocation() {
 		s.Allocation[i][s.Hubs[0]] = true
 		s.AllocationNode[i] = s.Hubs[0]
 	}
-
-	s.Verify() //TODO: remover
 }
 
 // RemoveHub removes hub from solution
@@ -77,7 +73,6 @@ func (s *Solution) RemoveHub(hub int) {
 	}
 
 	s.Cost = nil
-	s.Verify() //TODO: remover
 }
 
 // Swap functions between hub and node
@@ -102,7 +97,6 @@ func (s *Solution) SwapFunction(node, hub int) {
 	}
 
 	s.Cost = nil
-	s.Verify() //TODO: remover
 }
 
 //  Alloc a node to a hub and remove last allocation
@@ -179,7 +173,6 @@ func (s *Solution) AllocateNearestHub(data *network.Data) {
 			}
 		}
 	}
-	s.Verify() //TODO: remover
 }
 
 func (s *Solution) GetCost(data *network.Data) float64 {
@@ -244,8 +237,6 @@ func (s *Solution) CopyTo(copy *Solution) {
 		}
 	}
 	copy.generateHubList()
-	s.Verify()    //TODO: remover
-	copy.Verify() //TODO: remover
 }
 
 func (s *Solution) GetCopy() *Solution {
