@@ -3,7 +3,7 @@ package util
 import (
 	"testing"
 
-	"github.com/smartystreets/assertions"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRandom(t *testing.T) {
@@ -23,8 +23,8 @@ func TestRandom(t *testing.T) {
 	for _, tc := range tt {
 		for i := 0; i < timesRepeat; i++ {
 			res := Random(tc.Min, tc.Max)
-			assertions.ShouldBeLessThanOrEqualTo(t, res, tc.Max)
-			assertions.ShouldBeGreaterThanOrEqualTo(t, res, tc.Min)
+			assert.True(t, res <= tc.Max)
+			assert.True(t, res >= tc.Min)
 		}
 	}
 }
