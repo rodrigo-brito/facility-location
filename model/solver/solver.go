@@ -24,15 +24,13 @@ type Solver struct {
 }
 
 func (s *Solver) Print() error {
+	GAP := float64(0)
 	fmt.Println("-------------- ")
-	fmt.Printf("Time: %.4f\n", s.EndTime.Sub(s.StartTime).Seconds())
-	fmt.Printf("FO: %.4f\n", s.BestSolution.GetCost(s.Data))
-	fmt.Printf("Hubs: %v\n", s.BestSolution.Hubs)
+	fmt.Printf("%d-%.1f - GAP|TIME|FO Hubs: %v\n", s.Data.Size, s.Data.ScaleFactor, s.BestSolution.Hubs)
 	if s.TargetCost != nil {
-		GAP := (s.BestSolution.GetCost(s.Data) - *s.TargetCost) / *s.TargetCost * 100
-		fmt.Printf("GAP: %.4f%%\n", GAP)
+		GAP = (s.BestSolution.GetCost(s.Data) - *s.TargetCost) / *s.TargetCost * 100
 	}
-	fmt.Println("-------------- ")
+	fmt.Printf("%.4f,%.4f,%.4f\n", GAP, s.EndTime.Sub(s.StartTime).Seconds(), s.BestSolution.GetCost(s.Data))
 	return nil
 }
 

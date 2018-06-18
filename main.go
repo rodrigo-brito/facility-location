@@ -16,6 +16,8 @@ func run(inputFile string, asyncLimit int, verbose bool, targetValue float64) {
 		log.Fatal(err)
 	}
 
+	network.MaxAsyncTask = asyncLimit
+
 	solver := solver.New(
 		solver.WithNetworkData(network),
 		solver.WithMaxAsyncTasks(asyncLimit),

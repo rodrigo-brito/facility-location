@@ -12,7 +12,9 @@ import (
 
 // InputData store all network data
 type Data struct {
-	Size             int
+	Size         int
+	MaxAsyncTask int
+
 	ScaleFactor      float64
 	InstallationCost []float64
 	Distance         [][]float64

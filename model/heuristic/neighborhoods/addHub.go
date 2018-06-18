@@ -4,7 +4,7 @@ import (
 	"github.com/rodrigo-brito/facility-location/model/network"
 	"github.com/rodrigo-brito/facility-location/model/solution"
 	"github.com/rodrigo-brito/facility-location/util"
-	"github.com/rodrigo-brito/facility-location/util/log"
+	"github.com/rodrigo-brito/facility-location/util/async"
 )
 
 func AddHubPerturbation(solution *solution.Solution) {
@@ -22,25 +22,35 @@ func AddHubPerturbation(solution *solution.Solution) {
 	}
 }
 
-func AddHubLocalSearch(data *network.Data, solution *solution.Solution) (newSolution bool) {
-	for node := 0; node < data.Size; node++ {
-		if solution.Allocation[node][node] {
+func AddHubLocalSearch(data *network.Data, bestSolution *solution.Solution) bool {
+	tasks := make([]async.Task, 0)
+	updatedChannel := make(chan bool, data.Size)
+
+	for i := 0; i < data.Size; i++ {
+		node := i
+
+		if bestSolution.Allocation[node][node] {
 			continue
 		}
 
-		tempSolution := solution.GetCopy()
-		tempSolution.AddHub(node)
-		tempSolution.AllocateNearestHub(data)
+		tasks = append(tasks, func(data *network.Data, solution *solution.Solution) {
+			tempSolution := solution.GetCopy()
+			tempSolution.AddHub(node)
+			tempSolution.AllocateNearestHub(data)
 
-		if tempSolution.GetCost(data) < solution.GetCost(data) {
-			newSolution = true
-			tempSolution.CopyTo(solution)
-			log.Infof("ADD_HUB: New solution found FO=%.4f hubs=%v", solution.GetCost(data), solution.Hubs)
-		}
-
+			updatedChannel <- solution.UpdateIfBetter(tempSolution, data)
+		})
 	}
 
-	log.Infof("Neighborhood addHub [%v]", newSolution)
+	async.Run(data, bestSolution, data.MaxAsyncTask, tasks...)
+	close(updatedChannel)
 
-	return
+	bestSolution.Verify()
+
+	for ok := range updatedChannel {
+		if ok {
+			return true
+		}
+	}
+	return false
 }

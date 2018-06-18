@@ -3,6 +3,7 @@ package solution
 import (
 	"fmt"
 	"math"
+	"sync"
 
 	"github.com/rodrigo-brito/facility-location/model/network"
 	"github.com/rodrigo-brito/facility-location/util/log"
@@ -15,6 +16,7 @@ type Solution struct {
 	Allocation     [][]bool
 	AllocationNode []int
 	Cost           *float64
+	mutex          sync.Mutex
 }
 
 // Generate the hubs list from hubs bin vector
@@ -176,6 +178,9 @@ func (s *Solution) AllocateNearestHub(data *network.Data) {
 }
 
 func (s *Solution) GetCost(data *network.Data) float64 {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	// If solution has calculated Cost
 	if s.Cost != nil {
 		return *s.Cost
@@ -214,8 +219,8 @@ func (s *Solution) GetCost(data *network.Data) float64 {
 	return *s.Cost
 }
 
+// Copy current solution to other pointer
 func (s *Solution) CopyTo(copy *Solution) {
-	// Copy hubs
 	copy.Hubs = make([]int, len(s.Hubs), len(s.Hubs))
 	for i := range s.Hubs {
 		copy.Hubs[i] = s.Hubs[i]
@@ -239,12 +244,28 @@ func (s *Solution) CopyTo(copy *Solution) {
 	copy.generateHubList()
 }
 
+// Get copy of the solution in a new pointer
 func (s *Solution) GetCopy() *Solution {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	copy := New(s.Size)
 	s.CopyTo(copy)
 	return copy
 }
 
+// Update the solution if the new cost is better
+func (s *Solution) UpdateIfBetter(new *Solution, data *network.Data) bool {
+	if new.GetCost(data) < s.GetCost(data) {
+		new.CopyTo(s)
+		log.Infof("New solution found FO=%.4f hubs=%v", new.GetCost(data), new.Hubs)
+		return true
+	}
+
+	return false
+}
+
+// Verify solution integrity
 func (s *Solution) Verify() { // TODO: remover
 	for i := 0; i < s.Size; i++ {
 		sum := 0

@@ -4,7 +4,7 @@ import (
 	"github.com/rodrigo-brito/facility-location/model/network"
 	"github.com/rodrigo-brito/facility-location/model/solution"
 	"github.com/rodrigo-brito/facility-location/util"
-	"github.com/rodrigo-brito/facility-location/util/log"
+	"github.com/rodrigo-brito/facility-location/util/async"
 )
 
 func RemoveHubPerturbation(solution *solution.Solution) {
@@ -14,25 +14,34 @@ func RemoveHubPerturbation(solution *solution.Solution) {
 	}
 }
 
-func RemoveHubLocalSearch(data *network.Data, solution *solution.Solution) (newSolution bool) {
-	for _, hub := range solution.Hubs {
-		if len(solution.Hubs) < 2 {
-			return
-		}
+func RemoveHubLocalSearch(data *network.Data, bestSolution *solution.Solution) (newSolution bool) {
+	tasks := make([]async.Task, 0)
+	updatedChannel := make(chan bool, len(bestSolution.Hubs))
 
-		tempSolution := solution.GetCopy()
-		tempSolution.RemoveHub(hub)
-		tempSolution.AllocateNearestHub(data)
+	for _, i := range bestSolution.Hubs {
+		hub := i
+		tasks = append(tasks, func(data *network.Data, solution *solution.Solution) {
+			tempSolution := solution.GetCopy()
+			if len(tempSolution.Hubs) < 2 {
+				return
+			}
 
-		if tempSolution.GetCost(data) < solution.GetCost(data) {
-			newSolution = true
-			tempSolution.CopyTo(solution)
-			log.Infof("REMOVE_HUB: New solution found FO=%.4f hubs=%v", solution.GetCost(data), solution.Hubs)
-		}
+			tempSolution.RemoveHub(hub)
+			tempSolution.AllocateNearestHub(data)
 
+			updatedChannel <- solution.UpdateIfBetter(tempSolution, data)
+		})
 	}
 
-	log.Infof("Neighborhood removeHub [%v]", newSolution)
+	async.Run(data, bestSolution, data.MaxAsyncTask, tasks...)
+	close(updatedChannel)
 
-	return
+	bestSolution.Verify()
+
+	for ok := range updatedChannel {
+		if ok {
+			return true
+		}
+	}
+	return false
 }
