@@ -36,8 +36,6 @@ func RemoveHubLocalSearch(data *network.Data, bestSolution *solution.Solution) (
 	async.Run(data, bestSolution, data.MaxAsyncTask, tasks...)
 	close(updatedChannel)
 
-	bestSolution.Verify()
-
 	for ok := range updatedChannel {
 		if ok {
 			return true

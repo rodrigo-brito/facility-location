@@ -4,7 +4,7 @@ import (
 	"github.com/rodrigo-brito/facility-location/model/network"
 	"github.com/rodrigo-brito/facility-location/model/solution"
 	"github.com/rodrigo-brito/facility-location/util"
-	"github.com/rodrigo-brito/facility-location/util/log"
+	"github.com/rodrigo-brito/facility-location/util/async"
 )
 
 func SwapFunctionPerturbation(solution *solution.Solution) {
@@ -24,27 +24,33 @@ func SwapFunctionPerturbation(solution *solution.Solution) {
 	solution.SwapFunction(node, solution.AllocationNode[node])
 }
 
-func SwapFunctionLocalSearch(data *network.Data, solution *solution.Solution) (newSolution bool) {
-	for _, hub := range solution.Hubs {
-		for node := 0; node < data.Size; node++ {
-			if !solution.Allocation[node][hub] || solution.Allocation[node][node] {
-				continue
-			}
+func SwapFunctionLocalSearch(data *network.Data, bestSolution *solution.Solution) (newSolution bool) {
+	tasks := make([]async.Task, 0)
+	updatedChannel := make(chan bool, len(bestSolution.Hubs))
 
-			tempSolution := solution.GetCopy()
-			tempSolution.SwapFunction(node, hub)
-			tempSolution.AllocateNearestHub(data)
+	for _, i := range bestSolution.Hubs {
+		hub := i
+		tasks = append(tasks, func(data *network.Data, solution *solution.Solution) {
+			for node := 0; node < data.Size; node++ {
+				tempSolution := solution.GetCopy()
+				if !tempSolution.Allocation[node][hub] || tempSolution.Allocation[node][node] {
+					continue
+				}
+				tempSolution.SwapFunction(node, hub)
+				tempSolution.AllocateNearestHub(data)
 
-			if tempSolution.GetCost(data) < solution.GetCost(data) {
-				newSolution = true
-				tempSolution.CopyTo(solution)
-				log.Infof("SWAP_FUNCTION: New solution found hubs=%v FO=%.4f", solution.Hubs, solution.GetCost(data))
-				break
+				solution.UpdateIfBetter(tempSolution, data)
 			}
-		}
+		})
 	}
 
-	log.Infof("Neighborhood swapFunction [%v]", newSolution)
+	async.Run(data, bestSolution, data.MaxAsyncTask, tasks...)
+	close(updatedChannel)
 
-	return
+	for ok := range updatedChannel {
+		if ok {
+			return true
+		}
+	}
+	return false
 }

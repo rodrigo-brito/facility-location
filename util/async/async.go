@@ -5,7 +5,6 @@ import (
 
 	"github.com/rodrigo-brito/facility-location/model/network"
 	"github.com/rodrigo-brito/facility-location/model/solution"
-	"github.com/rodrigo-brito/facility-location/util/log"
 )
 
 type Task func(data *network.Data, solution *solution.Solution)
@@ -18,7 +17,6 @@ func taskConsumer(tasks chan Task, wg *sync.WaitGroup, data *network.Data, solut
 		}
 
 		task(data, solution)
-		log.Info("done")
 		wg.Done()
 	}
 }

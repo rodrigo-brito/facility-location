@@ -81,6 +81,8 @@ func (s *Solution) RemoveHub(hub int) {
 func (s *Solution) SwapFunction(node, hub int) {
 	if !s.Allocation[hub][hub] || !s.Allocation[node][hub] {
 		log.Info("hubs ", s.Hubs, node, hub)
+		log.Infof("swapping hub %d with node %d, HUB = %v, ALLOC = %v", hub, node, s.Allocation[hub][hub],
+			s.Allocation[node][hub])
 		panic("swap not permitted") //TODO: remove check
 	}
 
@@ -178,9 +180,6 @@ func (s *Solution) AllocateNearestHub(data *network.Data) {
 }
 
 func (s *Solution) GetCost(data *network.Data) float64 {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
 	// If solution has calculated Cost
 	if s.Cost != nil {
 		return *s.Cost
@@ -256,6 +255,9 @@ func (s *Solution) GetCopy() *Solution {
 
 // Update the solution if the new cost is better
 func (s *Solution) UpdateIfBetter(new *Solution, data *network.Data) bool {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	if new.GetCost(data) < s.GetCost(data) {
 		new.CopyTo(s)
 		log.Infof("New solution found FO=%.4f hubs=%v", new.GetCost(data), new.Hubs)
