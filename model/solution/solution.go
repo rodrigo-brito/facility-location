@@ -31,9 +31,9 @@ func (s *Solution) generateHubList() {
 
 // AddHub includes a new hub to the solution
 func (s *Solution) AddHub(hub int) {
-	if s.Allocation[hub][hub] {
-		panic("hub addiction not permitted") //TODO: remove check
-	}
+	//if s.Allocation[hub][hub] {
+	//	panic("hub addiction not permitted") //TODO: remove check
+	//}
 
 	s.Allocation[hub][s.AllocationNode[hub]] = false
 	s.Allocation[hub][hub] = true
@@ -56,10 +56,10 @@ func (s *Solution) initializeAllocation() {
 
 // RemoveHub removes hub from solution
 func (s *Solution) RemoveHub(hub int) {
-	if len(s.Hubs) < 2 {
-		log.Infof("removing %d hubs = %v ", hub, s.Hubs)
-		panic("hub remove not permitted") //TODO: remove check
-	}
+	//if len(s.Hubs) < 2 {
+	//	log.Infof("removing %d hubs = %v ", hub, s.Hubs)
+	//	panic("hub remove not permitted") //TODO: remove check
+	//}
 
 	s.Allocation[hub][hub] = false
 	s.generateHubList()
@@ -79,12 +79,12 @@ func (s *Solution) RemoveHub(hub int) {
 
 // Swap functions between hub and node
 func (s *Solution) SwapFunction(node, hub int) {
-	if !s.Allocation[hub][hub] || !s.Allocation[node][hub] {
-		log.Info("hubs ", s.Hubs, node, hub)
-		log.Infof("swapping hub %d with node %d, HUB = %v, ALLOC = %v", hub, node, s.Allocation[hub][hub],
-			s.Allocation[node][hub])
-		panic("swap not permitted") //TODO: remove check
-	}
+	//if !s.Allocation[hub][hub] || !s.Allocation[node][hub] {
+	//	log.Info("hubs ", s.Hubs, node, hub)
+	//	log.Infof("swapping hub %d with node %d, HUB = %v, ALLOC = %v", hub, node, s.Allocation[hub][hub],
+	//		s.Allocation[node][hub])
+	//	panic("swap not permitted") //TODO: remove check
+	//}
 
 	s.Allocation[hub][hub] = false
 	s.Allocation[hub][node] = true
@@ -105,10 +105,10 @@ func (s *Solution) SwapFunction(node, hub int) {
 
 //  Alloc a node to a hub and remove last allocation
 func (s *Solution) AllocNode(node, hub int) {
-	if !s.Allocation[hub][hub] || s.Allocation[node][node] {
-		log.Error(hub, s.Allocation[hub][hub], s.Allocation[node][node])
-		panic("allocation not permitted") //TODO: remove
-	}
+	//if !s.Allocation[hub][hub] || s.Allocation[node][node] {
+	//	log.Error(hub, s.Allocation[hub][hub], s.Allocation[node][node])
+	//	panic("allocation not permitted") //TODO: remove
+	//}
 
 	s.Allocation[node][s.AllocationNode[node]] = false
 	s.Allocation[node][hub] = true
@@ -268,7 +268,7 @@ func (s *Solution) UpdateIfBetter(new *Solution, data *network.Data) bool {
 }
 
 // Verify solution integrity
-func (s *Solution) Verify() { // TODO: remover
+func (s *Solution) Verifya() { // TODO: remover
 	for i := 0; i < s.Size; i++ {
 		sum := 0
 		for j := 0; j < s.Size; j++ {

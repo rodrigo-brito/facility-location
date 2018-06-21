@@ -26,11 +26,11 @@ type Solver struct {
 func (s *Solver) Print() error {
 	GAP := float64(0)
 	fmt.Println("-------------- ")
-	fmt.Printf("%d-%.1f - GAP|TIME|FO Hubs: %v\n", s.Data.Size, s.Data.ScaleFactor, s.BestSolution.Hubs)
+	fmt.Printf("INSTANCE|GAP|TIME|FO TASKS = %d | Hubs: %v\n", s.Data.MaxAsyncTask, s.BestSolution.Hubs)
 	if s.TargetCost != nil {
 		GAP = (s.BestSolution.GetCost(s.Data) - *s.TargetCost) / *s.TargetCost * 100
 	}
-	fmt.Printf("%.4f,%.4f,%.4f\n", GAP, s.EndTime.Sub(s.StartTime).Seconds(), s.BestSolution.GetCost(s.Data))
+	fmt.Printf("\"%d-%.1f\",%.4f,%.4f,%.4f\n", s.Data.Size, s.Data.ScaleFactor, GAP, s.EndTime.Sub(s.StartTime).Seconds(), s.BestSolution.GetCost(s.Data))
 	return nil
 }
 

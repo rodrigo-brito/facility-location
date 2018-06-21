@@ -10,25 +10,27 @@ import (
 func VNS(data *network.Data, solution *solution.Solution, perturbations ...neighborhoods.Perturbation) {
 	log.Info("VNS started")
 
-	tempSolution := solution.GetCopy()
+	for counter := 0; counter < 3; counter++ {
+		tempSolution := solution.GetCopy()
+		for position := 0; position < len(perturbations); position++ {
+			// apply perturbation
+			perturbations[position](tempSolution)
 
-	for position := 0; position < len(perturbations); position++ {
-		// apply perturbation
-		perturbations[position](tempSolution)
+			// apply local search - VND
+			VND(
+				data, tempSolution,
+				neighborhoods.ShiftLocalSearch,
+				neighborhoods.RemoveHubLocalSearch,
+				neighborhoods.AddHubLocalSearch,
+				neighborhoods.SwapFunctionLocalSearch,
+			)
 
-		// apply local search - VND
-		VND(
-			data, tempSolution,
-			neighborhoods.ShiftLocalSearch,
-			neighborhoods.RemoveHubLocalSearch,
-			neighborhoods.AddHubLocalSearch,
-			neighborhoods.SwapFunctionLocalSearch,
-		)
-
-		if tempSolution.GetCost(data) < solution.GetCost(data) {
-			tempSolution.CopyTo(solution)
-			log.Infof("SHIFT: New solution found FO=%.4f  hubs=%v", solution.GetCost(data), solution.Hubs)
-			position = -1
+			if tempSolution.GetCost(data) < solution.GetCost(data) {
+				tempSolution.CopyTo(solution)
+				log.Infof("SHIFT: New solution found FO=%.4f  hubs=%v", solution.GetCost(data), solution.Hubs)
+				position = -1
+				counter = -1
+			}
 		}
 	}
 }
