@@ -36,7 +36,7 @@ func AddHubLocalSearch(data *network.Data, bestSolution *solution.Solution) bool
 		tasks = append(tasks, func(data *network.Data, solution *solution.Solution) {
 			tempSolution := solution.GetCopy()
 			tempSolution.AddHub(node)
-			tempSolution.AllocateNearestHub(data)
+			ShiftLocalSearch(data, tempSolution)
 
 			updatedChannel <- solution.UpdateIfBetter(tempSolution, data)
 		})

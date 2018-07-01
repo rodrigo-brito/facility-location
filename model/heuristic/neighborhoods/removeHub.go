@@ -20,6 +20,7 @@ func RemoveHubLocalSearch(data *network.Data, bestSolution *solution.Solution) (
 
 	for _, i := range bestSolution.Hubs {
 		hub := i
+
 		tasks = append(tasks, func(data *network.Data, solution *solution.Solution) {
 			tempSolution := solution.GetCopy()
 			if len(tempSolution.Hubs) < 2 {
@@ -27,7 +28,7 @@ func RemoveHubLocalSearch(data *network.Data, bestSolution *solution.Solution) (
 			}
 
 			tempSolution.RemoveHub(hub)
-			tempSolution.AllocateNearestHub(data)
+			ShiftLocalSearch(data, tempSolution)
 
 			updatedChannel <- solution.UpdateIfBetter(tempSolution, data)
 		})

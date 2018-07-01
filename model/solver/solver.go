@@ -21,17 +21,8 @@ type Solver struct {
 	TargetCost *float64
 	StartTime  time.Time
 	EndTime    time.Time
-}
 
-func (s *Solver) Print() error {
-	GAP := float64(0)
-	fmt.Println("-------------- ")
-	fmt.Printf("INSTANCE|GAP|TIME|FO TASKS = %d | Hubs: %v\n", s.Data.MaxAsyncTask, s.BestSolution.Hubs)
-	if s.TargetCost != nil {
-		GAP = (s.BestSolution.GetCost(s.Data) - *s.TargetCost) / *s.TargetCost * 100
-	}
-	fmt.Printf("\"%d-%.1f\",%.4f,%.4f,%.4f\n", s.Data.Size, s.Data.ScaleFactor, GAP, s.EndTime.Sub(s.StartTime).Seconds(), s.BestSolution.GetCost(s.Data))
-	return nil
+	Verbose bool
 }
 
 func (s *Solver) initializeSolution() {
@@ -62,6 +53,20 @@ func (s *Solver) Solve() error {
 	// Display the best result and time
 	s.Print()
 
+	return nil
+}
+
+func (s *Solver) Print() error {
+	GAP := float64(0)
+
+	if s.Verbose {
+		fmt.Println("-------------- ")
+		fmt.Printf("INSTANCE|GAP|TIME|FO TASKS = %d | Hubs: %v\n", s.Data.MaxAsyncTask, s.BestSolution.Hubs)
+	}
+	if s.TargetCost != nil {
+		GAP = (s.BestSolution.GetCost(s.Data) - *s.TargetCost) / *s.TargetCost * 100
+	}
+	fmt.Printf("\"%d-%.1f\",%.4f,%.4f,%.4f\n", s.Data.Size, s.Data.ScaleFactor, GAP, s.EndTime.Sub(s.StartTime).Seconds(), s.BestSolution.GetCost(s.Data))
 	return nil
 }
 
@@ -96,6 +101,12 @@ func WithTarget(targetValue float64) OptFunc {
 		if targetValue > 0 {
 			solver.TargetCost = &targetValue
 		}
+	}
+}
+
+func WithVerboseMode(active bool) OptFunc {
+	return func(solver *Solver) {
+		solver.Verbose = active
 	}
 }
 

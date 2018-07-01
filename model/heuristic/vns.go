@@ -27,7 +27,7 @@ func VNS(data *network.Data, solution *solution.Solution, perturbations ...neigh
 
 			if tempSolution.GetCost(data) < solution.GetCost(data) {
 				tempSolution.CopyTo(solution)
-				log.Infof("SHIFT: New solution found FO=%.4f  hubs=%v", solution.GetCost(data), solution.Hubs)
+				log.Infof("VNS: New solution found FO=%.4f  hubs=%v", solution.GetCost(data), solution.Hubs)
 				position = -1
 				counter = -1
 			}

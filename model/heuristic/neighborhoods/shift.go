@@ -47,6 +47,7 @@ func ShiftLocalSearch(data *network.Data, bestSolution *solution.Solution) (newS
 
 	for i := 0; i < data.Size; i++ {
 		node := i
+
 		tasks = append(tasks, func(data *network.Data, solution *solution.Solution) {
 			for _, hub := range bestSolution.Hubs {
 				tempSolution := solution.GetCopy()
@@ -55,6 +56,7 @@ func ShiftLocalSearch(data *network.Data, bestSolution *solution.Solution) (newS
 				}
 
 				tempSolution.AllocNode(node, hub)
+
 				updatedChannel <- solution.UpdateIfBetter(tempSolution, data)
 			}
 		})

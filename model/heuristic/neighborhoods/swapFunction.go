@@ -26,20 +26,22 @@ func SwapFunctionPerturbation(solution *solution.Solution) {
 
 func SwapFunctionLocalSearch(data *network.Data, bestSolution *solution.Solution) (newSolution bool) {
 	tasks := make([]async.Task, 0)
-	updatedChannel := make(chan bool, len(bestSolution.Hubs))
+	updatedChannel := make(chan bool, len(bestSolution.Hubs)*data.Size)
 
 	for _, i := range bestSolution.Hubs {
 		hub := i
 		tasks = append(tasks, func(data *network.Data, solution *solution.Solution) {
 			for node := 0; node < data.Size; node++ {
 				tempSolution := solution.GetCopy()
+
 				if !tempSolution.Allocation[node][hub] || tempSolution.Allocation[node][node] {
 					continue
 				}
-				tempSolution.SwapFunction(node, hub)
-				tempSolution.AllocateNearestHub(data)
 
-				solution.UpdateIfBetter(tempSolution, data)
+				tempSolution.SwapFunction(node, hub)
+				ShiftLocalSearch(data, tempSolution)
+
+				updatedChannel <- solution.UpdateIfBetter(tempSolution, data)
 			}
 		})
 	}

@@ -22,6 +22,7 @@ func run(inputFile string, asyncLimit int, verbose bool, targetValue float64) {
 		solver.WithNetworkData(network),
 		solver.WithMaxAsyncTasks(asyncLimit),
 		solver.WithTarget(targetValue),
+		solver.WithVerboseMode(verbose),
 	)
 
 	solver.Solve()
