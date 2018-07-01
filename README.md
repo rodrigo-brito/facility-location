@@ -4,9 +4,9 @@
 
 Facility location problem with single allocation solved in Go (Golang).
 
-## Requiriments
+## Requirements
 
-Install Go - https://golang.org/doc/install
+Go - https://golang.org/doc/install
 
 ## Usage
 
